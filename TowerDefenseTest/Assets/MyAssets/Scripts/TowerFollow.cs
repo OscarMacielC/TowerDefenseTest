@@ -1,76 +1,75 @@
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 
+[RequireComponent(typeof(SphereCollider))]
 public class TowerFollow : MonoBehaviour
 {
-    private Transform _ObjectToFollow;
-    private Transform _TowerHead;
-    private SphereCollider _DetectionCollider;
     [SerializeField]
-    private List<EnemyStats> _EnemyStatsList = new List<EnemyStats>(0);
+    private Transform _towerHead = default;
+    private SphereCollider _detectionCollider = default;
     [SerializeField]
-    private int _Range = 5;
-    private TowerTarget _TargetSelector;
+    private List<GameObject> _enemyStatsList = new List<GameObject>(0);
+    [SerializeField]
+    private int _range = 5;
+    private GameObject _objectToFollow = default;
+
+    public UnityEvent<GameObject> OnTargetAquired { get; private set; } = new UnityEvent<GameObject>();
+    //private Transform ObjectToFollow => _enemyStatsList.FirstOrDefault()?.transform; // ? revisa si es null, si lo es regresa null
 
     private void Start()
     {
-        _TowerHead = transform.GetChild(0).GetChild(0); // Check later with a tag, script or something
-
         #region Obtener Colisionador de esfera
-        try
-        {
-            _DetectionCollider = GetComponent<SphereCollider>();
-            _DetectionCollider.radius = CalculateDetectionAreaSphere(_Range);
-        }
-        catch
-        {
-            Debug.LogWarning("No se encontró un colisionador de esfera");
-        }
-        #endregion
-        #region Obtener selector de objetivos
-        try
-        {
-            _TargetSelector = GetComponent<TowerTarget>();
-        }
-        catch
-        {
-            Debug.LogWarning("No se encontró un selector de objetivos");
-        }
+        _detectionCollider = GetComponent<SphereCollider>();
+        _detectionCollider.radius = CalculateDetectionAreaSphere(_range);
         #endregion
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.transform.CompareTag("Enemy")) // No tiene tag de enemigo;
-            return;
-        
-        if (other.GetComponent<EnemyStats>() == null) // Debug.LogWarning("No se encontraron los detalles del enemigo");
-            return;
+        if (!other.transform.CompareTag("Enemy")) return;
 
-        _EnemyStatsList.Add(other.GetComponent<EnemyStats>());
-        _ObjectToFollow = _TargetSelector.SelectLastEnemy(_EnemyStatsList);
+        _enemyStatsList.Add(other.gameObject);
+        if (_enemyStatsList.Count != 1) return;
+
+        Retarget();
     }
 
     private void OnTriggerExit(Collider other)
     {
-        _EnemyStatsList.Remove(other.GetComponent<EnemyStats>());
+        if (!other.transform.CompareTag("Enemy")) return;
+
+        _enemyStatsList.Remove(other.gameObject);
+        Retarget();
     }
 
     void Update()
     {
-        if(_ObjectToFollow!=null)
+        if (_enemyStatsList.Count <= 0) return;
+
+        if (_objectToFollow != null)
         {
-            _TowerHead.LookAt(_ObjectToFollow.transform);
+            _towerHead.LookAt(_objectToFollow.transform);
+        }
+        else
+        {
+            _enemyStatsList.RemoveAll(item => item == null);
+            Retarget();
         }
     }
-        
-    private float CalculateDetectionAreaSphere(int Range)
+
+    private float CalculateDetectionAreaSphere(int range)
     {
-        if (Range <= 0)
-            return 0f;
-        else
-            return Range - 0.5f; // Change height Y if needed
+        return range <= 0 ? 0f : range - 0.5f;
+    }
+
+    private void Retarget()
+    {
+        OnTargetAquired.Invoke(_objectToFollow = _enemyStatsList.FirstOrDefault());//Linq, si mayor a 0 Default.
+
+        //TODO: I will extend this to select the enemy depending on the towertype view task
+        //TowerFollow.OnTargetAquired.subscribe
     }
 
 }
