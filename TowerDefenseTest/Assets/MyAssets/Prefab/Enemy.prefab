@@ -132,7 +132,7 @@ Transform:
   m_Children:
   - {fileID: 1461841634799053169}
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &1461841635423325144
 MeshFilter:
@@ -225,6 +225,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1a546336c2c48b44a781c587a845baf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _enemyRenderer: {fileID: 1461841634799053175}
   _atackSpeed: 0
   _moveSpeed: 0
   _maxHP: 0

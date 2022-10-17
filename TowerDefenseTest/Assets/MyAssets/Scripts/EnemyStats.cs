@@ -1,43 +1,36 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyStats : MonoBehaviour
 {
-    [Header("ID")]
-    [SerializeField]
-    private int _UniqueID;
-    private static int s_IDGen = 0;
-    private Renderer _cubeRenderer;
-
     #region Declare Stats
-    [Header("Stats")]
-    [SerializeField]
-    private float _atackSpeed;
-    [SerializeField]
-    private float _moveSpeed;
-    [SerializeField]
-    private int _maxHP;
-    [SerializeField]
-    private int _currentHP;
+    [Header("Configuration")]
+    [SerializeField] private float _atackSpeed = default;
+    [SerializeField] private float _moveSpeed = default;
+    [SerializeField] private int _maxHP = default;
+    [SerializeField] private int _currentHP = default;
     #endregion
 
-    private void Awake()
+    [Header("Components")]
+    [SerializeField] private Renderer _enemyRenderer = null;
+
+    private void Start()
     {
-        s_IDGen++;
-        _UniqueID = s_IDGen;
+        InitializeStats();
+        ChangeChildColor();
     }
-    void Start()
+
+    private void InitializeStats()
     {
-        #region initialize Stats
-        _atackSpeed = Random.Range(0f,1f);
-        _moveSpeed = Random.Range(0f,1f);
-        _maxHP = Random.Range(1, 10)*10;
+        _atackSpeed = Random.Range(0f, 1f);
+        _moveSpeed = Random.Range(0f, 1f);
+        _maxHP = Random.Range(1, 10) * 10;
         _currentHP = Mathf.RoundToInt(_maxHP / Random.Range(1, 10));
-        #endregion
-        _cubeRenderer = transform.GetChild(0).GetComponent<Renderer>();
-        Color randColor = new Color(_atackSpeed, _moveSpeed, _currentHP/_maxHP, 1.0f);
-        _cubeRenderer.material.SetColor("_Color", randColor);
+    }
+
+    private void ChangeChildColor()
+    {
+        Color randColor = new Color(_atackSpeed, _moveSpeed, _currentHP / _maxHP, 1.0f);
+        _enemyRenderer.material.SetColor("_Color", randColor);
     }
 
 }
